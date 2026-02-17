@@ -12,7 +12,7 @@
         }
 
         body {
-            font-family: 'Microsoft YaHei', Arial, sans-serif;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Microsoft YaHei', Arial, sans-serif;
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             min-height: 100vh;
             padding: 20px;
@@ -205,24 +205,92 @@
         }
 
         @media (max-width: 768px) {
+            body {
+                padding: 10px;
+            }
+
             .container {
-                padding: 20px;
+                padding: 15px;
+                border-radius: 15px;
             }
 
             h1 {
                 font-size: 24px;
+                margin-bottom: 20px;
+            }
+
+            h2 {
+                font-size: 18px;
+                margin-bottom: 15px;
             }
 
             .weapon-grid {
-                grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+                grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+                gap: 10px;
+            }
+
+            .weapon-card {
+                padding: 12px;
+            }
+
+            .weapon-name {
+                font-size: 14px;
+            }
+
+            .weapon-attrs {
+                font-size: 11px;
             }
 
             .button-group {
                 flex-direction: column;
+                gap: 10px;
             }
 
             button {
                 width: 100%;
+                padding: 12px;
+                font-size: 16px;
+            }
+
+            .result {
+                padding: 15px;
+            }
+
+            .result-item {
+                padding: 15px;
+            }
+
+            .result-item h3 {
+                font-size: 16px;
+            }
+
+            .result-detail {
+                font-size: 14px;
+            }
+
+            .weapon-list span {
+                font-size: 12px;
+                padding: 4px 10px;
+                margin: 2px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .weapon-grid {
+                grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+                gap: 8px;
+            }
+
+            .weapon-card {
+                padding: 10px;
+            }
+
+            .weapon-name {
+                font-size: 13px;
+            }
+
+            .weapon-attrs {
+                font-size: 10px;
             }
         }
     </style>
