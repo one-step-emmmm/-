@@ -1,0 +1,559 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>终末地基质刷取大师</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Microsoft YaHei', Arial, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            padding: 40px;
+        }
+
+        h1 {
+            text-align: center;
+            color: #333;
+            margin-bottom: 30px;
+            font-size: 32px;
+        }
+
+        .section {
+            margin-bottom: 40px;
+        }
+
+        h2 {
+            color: #667eea;
+            margin-bottom: 20px;
+            font-size: 24px;
+            border-bottom: 2px solid #667eea;
+            padding-bottom: 10px;
+        }
+
+        .weapon-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .weapon-card {
+            background: #f8f9fa;
+            border: 2px solid #e9ecef;
+            border-radius: 10px;
+            padding: 15px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .weapon-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+        }
+
+        .weapon-card.selected {
+            background: #667eea;
+            color: white;
+            border-color: #667eea;
+        }
+
+        .weapon-name {
+            font-weight: bold;
+            margin-bottom: 8px;
+            font-size: 16px;
+        }
+
+        .weapon-attrs {
+            font-size: 12px;
+            opacity: 0.9;
+        }
+
+        .weapon-attrs div {
+            margin: 3px 0;
+        }
+
+        .button-group {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        button {
+            padding: 12px 30px;
+            font-size: 16px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-weight: bold;
+        }
+
+        .btn-primary {
+            background: #667eea;
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: #5568d3;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        }
+
+        .btn-secondary {
+            background: #6c757d;
+            color: white;
+        }
+
+        .btn-secondary:hover {
+            background: #5a6268;
+        }
+
+        .result {
+            background: #f8f9fa;
+            border-radius: 10px;
+            padding: 25px;
+            margin-top: 20px;
+        }
+
+        .result-item {
+            margin-bottom: 20px;
+            padding: 20px;
+            background: white;
+            border-radius: 8px;
+            border-left: 4px solid #667eea;
+        }
+
+        .result-item h3 {
+            color: #667eea;
+            margin-bottom: 15px;
+            font-size: 20px;
+        }
+
+        .result-detail {
+            margin: 10px 0;
+            font-size: 15px;
+            color: #495057;
+        }
+
+        .result-detail strong {
+            color: #333;
+        }
+
+        .weapon-list {
+            margin-top: 15px;
+            padding: 15px;
+            background: #e9ecef;
+            border-radius: 5px;
+        }
+
+        .weapon-list span {
+            display: inline-block;
+            background: #667eea;
+            color: white;
+            padding: 5px 12px;
+            border-radius: 15px;
+            margin: 3px;
+            font-size: 13px;
+        }
+
+        .probability {
+            background: #28a745;
+            color: white;
+            padding: 10px 15px;
+            border-radius: 5px;
+            display: inline-block;
+            margin-top: 10px;
+            font-weight: bold;
+        }
+
+        .no-selection {
+            text-align: center;
+            color: #6c757d;
+            padding: 40px;
+            font-size: 18px;
+        }
+
+        .selected-count {
+            text-align: center;
+            margin-bottom: 20px;
+            font-size: 18px;
+            color: #667eea;
+            font-weight: bold;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 40px;
+            font-size: 18px;
+            color: #667eea;
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                padding: 20px;
+            }
+
+            h1 {
+                font-size: 24px;
+            }
+
+            .weapon-grid {
+                grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+            }
+
+            .button-group {
+                flex-direction: column;
+            }
+
+            button {
+                width: 100%;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🎯 终末地基质刷取优化器</h1>
+
+        <div class="section">
+            <h2>选择武器</h2>
+            <div class="selected-count">
+                已选择 <span id="selectedCount">0</span> 把武器
+            </div>
+            <div class="weapon-grid" id="weaponGrid"></div>
+            <div class="button-group">
+                <button class="btn-primary" onclick="calculateOptimalStrategy()">计算最优策略</button>
+                <button class="btn-secondary" onclick="selectAll()">全选</button>
+                <button class="btn-secondary" onclick="clearSelection()">清空选择</button>
+            </div>
+        </div>
+
+        <div class="section">
+            <h2>最优刷取策略</h2>
+            <div id="result"></div>
+        </div>
+    </div>
+
+    <script>
+        const weapons = [
+            { name: '宏愿', base: '敏捷提升', additional: '攻击提升', skill: '附术' },
+            { name: '不知归', base: '意志提升', additional: '攻击提升', skill: '流转' },
+            { name: '熔铸火焰', base: '智识提升', additional: '攻击提升', skill: '夜幕' },
+            { name: '黯色火炬', base: '智识提升', additional: '灼热伤害提升', skill: '附术' },
+            { name: '扶摇', base: '主能力提升', additional: '暴击率提升', skill: '夜幕' },
+            { name: '热熔切割器', base: '意志提升', additional: '攻击提升', skill: '流转' },
+            { name: '显赫声明', base: '主能力提升', additional: '物理伤害提升', skill: '残暴' },
+            { name: '白夜新星', base: '主能力提升', additional: '源石技艺强度提升', skill: '附术' },
+            { name: '沧溟星梦', base: '智识提升', additional: '治疗效率提升', skill: '附术' },
+            { name: '使命必达', base: '意志提升', additional: '终结技充能效率提升', skill: '追袭' },
+            { name: '作品：蚀迹', base: '意志提升', additional: '自然伤害提升', skill: '压制' },
+            { name: '爆破单元', base: '主能力提升', additional: '源石技艺强度提升', skill: '迸发' },
+            { name: '遗忘', base: '智识提升', additional: '法术提升', skill: '夜幕' },
+            { name: '骑士精神', base: '意志提升', additional: '生命提升', skill: '医疗' },
+            { name: '艺术暴君', base: '智识提升', additional: '暴击率提升', skill: '切骨' },
+            { name: '领航者', base: '智识提升', additional: '寒冷伤害提升', skill: '附术' },
+            { name: '楔子', base: '主能力提升', additional: '暴击率提升', skill: '附术' },
+            { name: '同类相食', base: '主能力提升', additional: '法术提升', skill: '附术' },
+            { name: '大雷斑', base: '力量提升', additional: '生命提升', skill: '医疗' },
+            { name: '典范', base: '主能力提升', additional: '攻击提升', skill: '压制' },
+            { name: '昔日精品', base: '意志提升', additional: '生命提升', skill: '效益' },
+            { name: '破碎君王', base: '力量提升', additional: '暴击率提升', skill: '粉碎' },
+            { name: '负山', base: '敏捷提升', additional: '物理伤害提升', skill: '效益' },
+            { name: '骁勇', base: '敏捷提升', additional: '物理伤害提升', skill: '巧技' },
+            { name: '赫拉芬格', base: '力量提升', additional: '攻击提升', skill: '迸发' },
+            { name: 'J.E.T.', base: '主能力提升', additional: '攻击提升', skill: '压制' }
+        ];
+
+        const zones = {
+            '枢纽区': {
+                base: ['敏捷提升', '力量提升', '意志提升', '智识提升', '主能力提升'],
+                additional: ['攻击提升', '灼热伤害提升', '电磁伤害提升', '寒冷伤害提升', '自然伤害提升', '源石技艺强度提升', '终结技充能效率提升', '法术提升'],
+                skill: ['强攻', '压制', '追袭', '粉碎', '巧技', '进发', '流转', '效益']
+            },
+            '源石研究园': {
+                base: ['敏捷提升', '力量提升', '意志提升', '智识提升', '主能力提升'],
+                additional: ['攻击提升', '物理伤害提升', '电磁伤害提升', '寒冷伤害提升', '自然伤害提升', '暴击率提升', '终结技充能效率提升', '法术提升'],
+                skill: ['压制', '追袭', '昂扬', '巧技', '附术', '医疗', '切骨', '效益']
+            },
+            '矿脉园区': {
+                base: ['敏捷提升', '力量提升', '意志提升', '智识提升', '主能力提升'],
+                additional: ['生命提升', '物理伤害提升', '灼热伤害提升', '寒冷伤害提升', '自然伤害提升', '暴击率提升', '源石技艺强度提升', '治疗效率提升'],
+                skill: ['强攻', '压制', '巧技', '残暴', '附术', '进发', '夜幕', '效益']
+            },
+            '供能高地': {
+                base: ['敏捷提升', '力量提升', '意志提升', '智识提升', '主能力提升'],
+                additional: ['攻击提升', '生命提升', '物理伤害提升', '灼热伤害提升', '自然伤害提升', '暴击率提升', '源石技艺强度提升', '治疗效率提升'],
+                skill: ['追袭', '粉碎', '昂扬', '残暴', '附术', '医疗', '切骨', '流转']
+            },
+            '武陵城': {
+                base: ['敏捷提升', '力量提升', '意志提升', '智识提升', '主能力提升'],
+                additional: ['攻击提升', '生命提升', '电磁伤害提升', '寒冷伤害提升', '暴击率提升', '终结技充能效率提升', '法术提升', '治疗效率提升'],
+                skill: ['强攻', '粉碎', '残暴', '医疗', '切骨', '进发', '夜幕', '流转']
+            }
+        };
+
+        let selectedWeapons = [];
+
+        function initWeaponGrid() {
+            const grid = document.getElementById('weaponGrid');
+            grid.innerHTML = '';
+            
+            weapons.forEach((weapon, index) => {
+                const card = document.createElement('div');
+                card.className = 'weapon-card';
+                card.onclick = () => toggleWeapon(index);
+                
+                card.innerHTML = `
+                    <div class="weapon-name">${weapon.name}</div>
+                    <div class="weapon-attrs">
+                        <div>基础: ${weapon.base}</div>
+                        <div>附加: ${weapon.additional}</div>
+                        <div>技能: ${weapon.skill}</div>
+                    </div>
+                `;
+                
+                grid.appendChild(card);
+            });
+        }
+
+        function toggleWeapon(index) {
+            const card = document.querySelectorAll('.weapon-card')[index];
+            
+            if (selectedWeapons.includes(index)) {
+                selectedWeapons = selectedWeapons.filter(i => i !== index);
+                card.classList.remove('selected');
+            } else {
+                selectedWeapons.push(index);
+                card.classList.add('selected');
+            }
+            
+            updateSelectedCount();
+        }
+
+        function updateSelectedCount() {
+            document.getElementById('selectedCount').textContent = selectedWeapons.length;
+        }
+
+        function selectAll() {
+            selectedWeapons = weapons.map((_, index) => index);
+            document.querySelectorAll('.weapon-card').forEach(card => {
+                card.classList.add('selected');
+            });
+            updateSelectedCount();
+        }
+
+        function clearSelection() {
+            selectedWeapons = [];
+            document.querySelectorAll('.weapon-card').forEach(card => {
+                card.classList.remove('selected');
+            });
+            updateSelectedCount();
+            document.getElementById('result').innerHTML = '';
+        }
+
+        function countSatisfiedWeapons(weaponList, zoneName, selectedBases, fixedAttrType, fixedAttrValue) {
+            const zoneAttrs = zones[zoneName];
+            let count = 0;
+            const satisfied = [];
+            
+            for (const weaponIndex of weaponList) {
+                const weapon = weapons[weaponIndex];
+                
+                const baseMatch = selectedBases.includes(weapon.base);
+                
+                let addMatch, skillMatch;
+                if (fixedAttrType === 'additional') {
+                    addMatch = weapon.additional === fixedAttrValue;
+                    skillMatch = zoneAttrs.skill.includes(weapon.skill) || (weapon.skill === '迸发' && zoneAttrs.skill.includes('进发'));
+                } else {
+                    addMatch = zoneAttrs.additional.includes(weapon.additional);
+                    skillMatch = weapon.skill === fixedAttrValue || (weapon.skill === '迸发' && fixedAttrValue === '进发');
+                }
+                
+                if (baseMatch && addMatch && skillMatch) {
+                    count++;
+                    satisfied.push(weapon.name);
+                }
+            }
+            
+            return { count, satisfied };
+        }
+
+        function getCombinations(arr, size) {
+            const result = [];
+            
+            function combine(start, combo) {
+                if (combo.length === size) {
+                    result.push([...combo]);
+                    return;
+                }
+                
+                for (let i = start; i < arr.length; i++) {
+                    combo.push(arr[i]);
+                    combine(i + 1, combo);
+                    combo.pop();
+                }
+            }
+            
+            combine(0, []);
+            return result;
+        }
+
+        function calculateOptimalStrategy() {
+            const resultDiv = document.getElementById('result');
+            
+            if (selectedWeapons.length === 0) {
+                resultDiv.innerHTML = '<div class="no-selection">请先选择武器</div>';
+                return;
+            }
+            
+            resultDiv.innerHTML = '<div class="loading">计算中...</div>';
+            
+            setTimeout(() => {
+                requestAnimationFrame(() => {
+                    let bestConfig = null;
+                    let bestCount = 0;
+                    let bestSatisfied = [];
+                    const allConfigs = [];
+                    
+                    for (const [zoneName, zoneAttrs] of Object.entries(zones)) {
+                        const baseCombinations = getCombinations(zoneAttrs.base, 3);
+                        
+                        for (const baseCombo of baseCombinations) {
+                            for (const fixedAttr of zoneAttrs.additional) {
+                                const { count, satisfied } = countSatisfiedWeapons(
+                                    selectedWeapons, zoneName, baseCombo, 'additional', fixedAttr
+                                );
+                                
+                                allConfigs.push({
+                                    zone: zoneName,
+                                    bases: baseCombo,
+                                    fixedType: 'additional',
+                                    fixedValue: fixedAttr,
+                                    count,
+                                    satisfied
+                                });
+                                
+                                if (count > bestCount) {
+                                    bestCount = count;
+                                    bestConfig = {
+                                        zone: zoneName,
+                                        bases: baseCombo,
+                                        fixedType: 'additional',
+                                        fixedValue: fixedAttr
+                                    };
+                                    bestSatisfied = satisfied;
+                                }
+                            }
+                            
+                            for (const fixedAttr of zoneAttrs.skill) {
+                                const { count, satisfied } = countSatisfiedWeapons(
+                                    selectedWeapons, zoneName, baseCombo, 'skill', fixedAttr
+                                );
+                                
+                                allConfigs.push({
+                                    zone: zoneName,
+                                    bases: baseCombo,
+                                    fixedType: 'skill',
+                                    fixedValue: fixedAttr,
+                                    count,
+                                    satisfied
+                                });
+                                
+                                if (count > bestCount) {
+                                    bestCount = count;
+                                    bestConfig = {
+                                        zone: zoneName,
+                                        bases: baseCombo,
+                                        fixedType: 'skill',
+                                        fixedValue: fixedAttr
+                                    };
+                                    bestSatisfied = satisfied;
+                                }
+                            }
+                        }
+                    }
+                    
+                    const randomPoolSize = bestConfig.fixedType === 'additional' 
+                        ? zones[bestConfig.zone].skill.length 
+                        : zones[bestConfig.zone].additional.length;
+                    
+                    const singleProbability = 1 / (3 * randomPoolSize);
+                    const anyProbability = bestCount * singleProbability;
+                    const anyProbabilityPercent = (anyProbability * 100).toFixed(2);
+                    
+                    const bestConfigs = allConfigs.filter(config => config.count === bestCount);
+                    
+                    let html = `
+                        <div class="result-item">
+                            <h3>🏆 最优刷取策略</h3>
+                            <div class="result-detail">
+                                <strong>区域：</strong>${bestConfig.zone}
+                            </div>
+                            <div class="result-detail">
+                                <strong>选择的主属性：</strong>${bestConfig.bases.join('、')}
+                            </div>
+                            <div class="result-detail">
+                                <strong>选择的固定属性：</strong>${bestConfig.fixedType === 'additional' ? '附加属性' : '技能属性'} - ${bestConfig.fixedValue}
+                            </div>
+                            <div class="result-detail">
+                                <strong>可满足的武器数量：</strong>${bestCount}/${selectedWeapons.length}
+                            </div>
+                            <div class="weapon-list">
+                                <strong>可满足的武器：</strong><br>
+                                ${bestSatisfied.map(w => `<span>${w}</span>`).join('')}
+                            </div>
+                            <div class="probability">
+                                满足任意一把武器的概率：${anyProbabilityPercent}%
+                            </div>
+                        </div>
+                    `;
+                    
+                    if (bestConfigs.length > 1) {
+                        html += `
+                            <div class="result-item">
+                                <h3>📋 所有满足${bestCount}把武器的配置</h3>
+                        `;
+                        
+                        bestConfigs.forEach((config, index) => {
+                            html += `
+                                <div style="margin-top: 15px; padding: 15px; background: #f8f9fa; border-radius: 5px;">
+                                    <div class="result-detail"><strong>配置 ${index + 1}：</strong></div>
+                                    <div class="result-detail">区域：${config.zone}</div>
+                                    <div class="result-detail">主属性：${config.bases.join('、')}</div>
+                                    <div class="result-detail">固定属性：${config.fixedType === 'additional' ? '附加属性' : '技能属性'} - ${config.fixedValue}</div>
+                                    <div class="weapon-list">
+                                        ${config.satisfied.map(w => `<span>${w}</span>`).join('')}
+                                    </div>
+                                </div>
+                            `;
+                        });
+                        
+                        html += '</div>';
+                    }
+                    
+                    resultDiv.innerHTML = html;
+                });
+            }, 50);
+        }
+
+        initWeaponGrid();
+    </script>
+</body>
+</html>
