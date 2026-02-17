@@ -1,0 +1,17 @@
+{
+  "name": "endfield-matrix-optimizer",
+  "version": "1.0.0",
+  "description": "终末地基质刷取大师 - 最优刷取策略计算工具",
+  "main": "index.html",
+  "scripts": {
+    "start": "serve -s . -p 8080"
+  },
+  "keywords": [
+    "endfield",
+    "matrix",
+    "optimizer",
+    "game"
+  ],
+  "author": "",
+  "license": "MIT"
+}
